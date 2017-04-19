@@ -64,6 +64,7 @@ sg.int<-function(g,...,lower, upper, parallel = F){
 # ===================================================
 
 # create test functions for unit testing and speed benchmarking
+
 test2dim <- function(x) 4*x[1] + 3*x[2]^2  # 2 dimensions
 
 test3dim <- function(x) 4*x[1] + 3*x[2]^2 + 2*x[3]  # 3 dimensions
@@ -74,16 +75,18 @@ test4dim <- function(x) 4*x[1] + 3*x[2]^2 + 2*x[3] + x[4]  # 4 dimensions
 # Unit Testing ######################################
 # ===================================================
 
-# test that function throws error when lower and upper bound are confused
-test_that("Test that upper is larger than lower",
-  throws_error(sg.int(test2dim, upper = c(1, 1), lower = c(2, 2))))
-
-# test that function estimates correct results
-testthat("Test that function estimates correct values")
+# test that function estimates correct values
+test_that("Test that sparsegrid calculates same values than adaptIntegrate",
+  expect_equal(as.numeric(sg.int(test2dim, lower = c(0,0), upper = c(2,2))),
+    as.numeric(adaptIntegrate(test2dim, lower = c(0,0), upper = c(2,2))[1])))
+  
+# test that function throws an error if upper bound is smaller than lower bound
+test_that("Test that sparsegrid throws error if lower > upper bound",  
+  expect_error(sg.int(test2dim, lower = c(2,2), upper = c(0,0))))
 
 # Measure speed: ####################################
 # for parallelized and non-parallelized function 
-# & between functions 'sg.int' vs adaptIntegrate
+# & between functions sparsegrid vs adaptIntegrate
 # ===================================================
 
 # measure speed for 2 dimensions --------
@@ -94,7 +97,7 @@ microbenchmark(
   times =20
 )
 ## solo vs. parallel: function without parallelization is faster
-## adaptInt vs. sg.int: adaptInt is much faster
+## adaptInt vs. sparse grid: adaptInt is much faster
 
 # measure speed for 3 dimensions --------
 microbenchmark(
@@ -104,7 +107,7 @@ microbenchmark(
   times =5
 )
 ## solo vs. parallel: function without parallelization is faster
-## adaptInt vs. sg.int: adaptInt is much faster
+## adaptInt vs. sparse grid: adaptInt is much faster
 
 # measure speed for 4 dimensions --------
 microbenchmark(
@@ -114,4 +117,4 @@ microbenchmark(
   times=5
 )
 ## solo vs. parallel: function without parallelization is faster
-## adaptInt vs. sg.int: adaptInt is much faster
+## adaptInt vs. sparse grid: adaptInt is much faster
