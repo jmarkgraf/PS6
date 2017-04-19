@@ -2,7 +2,7 @@
 # Statistical Programming 
 # Problem Set 6
 # Author: Jonas Markgraf
-# Date: April 17, 2017
+# Date: April 17-19, 2017
 ###########################
 
 # load packages
@@ -16,10 +16,11 @@ rm(list = ls())
 # ===========================================================================
 
 sg.int<-function(g,...,lower, upper, parallel = F){
+  # load packages that are required to run function
   require("SparseGrid")
-  require("dplyr")
-  require("parallel")
-  require("doMC")
+  require("dplyr")  # for parallelized function
+  require("parallel")  # to detect number of cores
+  require("doMC")  # to register number of cores
   
   # identify and register number of cores for parallelization
   cores <- detectCores()
@@ -36,16 +37,16 @@ sg.int<-function(g,...,lower, upper, parallel = F){
   if (any(lower>upper)) stop("lower must be smaller than upper")
   
   # function that creates matrix of all possible combinations of values between the lower 
-  # and upper bound values, depending on number of dimensions
+  # and upper bound values in steps of 1, depending on number of dimensions
   gridss<-as.matrix(expand.grid(lapply(1:no.dim, function(x) seq(lower[x], upper[x]-1, by=1))))
   
   # function creates nodes and weights for integration
-  sp.grid <- createIntegrationGrid( 'KPU', dimension=no.dim, k=5 )
-  # creating nodes for integration
+  sp.grid <- createIntegrationGrid( 'KPU', dimension=no.dim, k=5 )  # 'KPU'for unweighted integral; 'k' for accuracy
+  # creating nodes for integration by summing gridds and previosuly defined nodes
   nodes<-gridss[1,]+sp.grid$nodes
-  # creating weights for integration
+  # taking weights values from createIntegrationGrid function result
   weights<-sp.grid$weights
-  
+  # looping over gridss object to create node for each point and weight for respective point
   for (i in 2:nrow(gridss)) {
     nodes<-rbind(nodes,gridss[i,]+sp.grid$nodes)  
     weights<-c(weights,sp.grid$weights)
@@ -53,7 +54,7 @@ sg.int<-function(g,...,lower, upper, parallel = F){
   
   # apply function 'g' for all nodes, option to parallelize function
   gx.sp <- aaply(nodes, 1, g, .parallel = parallel)
-  # weigh the results
+  # weigh the resulting value
   val.sp <- gx.sp %*%weights
   
   # return value
