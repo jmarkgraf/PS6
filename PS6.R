@@ -3,9 +3,12 @@
 # Problem Set 6
 # Author: Jonas Markgraf
 # Date: April 17, 2017
+###########################
 
+# load packages
 library(testthat)
-library(microbenchmark)
+library(microbenchmark) 
+library(cubature)
 
 rm(list = ls())
 
@@ -48,8 +51,9 @@ sg.int<-function(g,...,lower, upper, parallel = F){
     weights<-c(weights,sp.grid$weights)
   }
   
-  # parallelize 'apply' function
+  # apply function 'g' for all nodes, option to parallelize function
   gx.sp <- aaply(nodes, 1, g, .parallel = parallel)
+  # weigh the results
   val.sp <- gx.sp %*%weights
   
   # return value
@@ -77,29 +81,37 @@ test_that("Test that upper is larger than lower",
 # test that function estimates correct results
 testthat("Test that function estimates correct values")
 
-# Measure speed for parallelized and non-parallelized function
-# =============================================================
+# Measure speed: ####################################
+# for parallelized and non-parallelized function 
+# & between functions 'sg.int' vs adaptIntegrate
+# ===================================================
 
-# measure speed for 2 dimensions
+# measure speed for 2 dimensions --------
 microbenchmark(
   "solo"=sg.int(g=test2dim, lower = c(0, 0), upper = c(4, 4)),
   "parallel"=sg.int(g=test2dim, lower = c(0, 0), upper = c(4, 4), parallel = T),
+  "adaptInt" = adaptIntegrate(f = test2dim, lower = c(0, 0, 0), upper = c(4, 4, 4)),
   times =20
 )
-## function without parallelization is faster
+## solo vs. parallel: function without parallelization is faster
+## adaptInt vs. sg.int: adaptInt is much faster
 
-# measure speed for 3 dimensions
+# measure speed for 3 dimensions --------
 microbenchmark(
   "solo"=sg.int(g=test3dim, lower = c(0, 0, 0), upper = c(4, 4, 4)),
   "parallel"=sg.int(g=test3dim, lower = c(0, 0, 0), upper = c(4, 4, 4), parallel = T),
+  "adaptInt" = adaptIntegrate(f = test3dim, lower = c(0, 0, 0), upper = c(4, 4, 4)),
   times =5
 )
-## function without parallelization is faster
+## solo vs. parallel: function without parallelization is faster
+## adaptInt vs. sg.int: adaptInt is much faster
 
-# measure speed for 4 dimensions
+# measure speed for 4 dimensions --------
 microbenchmark(
   "solo"=sg.int(g=test4dim, lower = c(0, 0, 0, 0), upper = c(4, 4, 4, 4)),
   "parallel"=sg.int(g=test4dim, lower = c(0, 0, 0, 0), upper = c(4, 4, 4, 4), parallel = T),
+  "adaptInt" = adaptIntegrate(f = test4dim, lower = c(0, 0, 0), upper = c(4, 4, 4)),
   times=5
 )
-## function without parallelization is faster
+## solo vs. parallel: function without parallelization is faster
+## adaptInt vs. sg.int: adaptInt is much faster
