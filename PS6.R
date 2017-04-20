@@ -119,3 +119,17 @@ microbenchmark(
 )
 ## solo vs. parallel: function without parallelization is faster
 ## adaptInt vs. sparse grid: adaptInt is much faster
+
+#################################### MAXIMIZATION IN R ################################
+#######################################################################################
+
+# generate function from slide
+func <- function(x, y) {
+  sin((x^2) / 2 - (y^2) / 4) * cos((2*x) - exp(y))
+}
+
+# use 'optimize' function to find local maxima
+optimize(f = func, lower = c(-1,-1), upper = c(3,3), maximum = T)
+
+# use 'optim' function to find local maxima
+optim(par = c(2,1), fn = func, lower = c(-1,-1), upper = c(3,3), method = "L-BFGS-B")
